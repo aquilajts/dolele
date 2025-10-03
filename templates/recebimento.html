@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churrasquinho do Lêle - Recebimento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url('/static/wallpaperhorizontal.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            color: #FFFFFF;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        .comanda-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: #000000;
+        }
+        .comanda-header {
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .comanda-header h3 { margin: 0; font-size: 18px; color: #8B0000; }
+        .comanda-content { display: none; padding-top: 10px; }
+        .comanda-card.expanded .comanda-content { display: block; }
+        .pedido-detalhes { font-size: 14px; margin-bottom: 10px; }
+        .pedido-detalhes .status.realizado { color: #DC2626; }
+        .pedido-detalhes .status.empreparo { color: #F59E0B; }
+        .pedido-detalhes .status.preparado { color: #10B981; }
+        .pedido-detalhes .status.entregue { color: #8B5CF6; }
+        .pedido-detalhes .status.pago { color: #000000; font-weight: bold; }
+        .produto-list { margin-left: 20px; }
+        .pagar-btn {
+            background-color: #000000;
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .pagar-btn:hover { background-color: #333333; }
+        .footer {
+            background-color: #000000;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #FFFFFF;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        @media (max-width: 600px) {
+            .comanda-card { width: 90%; margin: 10px auto; }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.comanda-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const card = header.parentElement;
+                    card.classList.toggle('expanded');
+                });
+            });
+        });
+
+        async function pagarComanda(id_cliente) {
+            const response = await fetch('/caixa/funcionario/pagar_comanda', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_cliente })
+            });
+            if (response.ok) {
+                alert('Comanda paga!');
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Erro ao pagar comanda');
+            }
+        }
+        
+        async function aplicarDesconto(pedido_numero) {
+            const desconto = document.getElementById(`desconto-${pedido_numero}`).value.trim();
+            if (!desconto || isNaN(desconto)) {
+                alert('Digite um valor de desconto válido!');
+                return;
+            }
+            
+            const response = await fetch('/caixa/funcionario/aplicar_desconto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pedido_numero, desconto: parseFloat(desconto) })
+            });
+            
+            if (response.ok) {
+                alert('Desconto aplicado!');
+                document.getElementById(`desconto-${pedido_numero}`).value = '';
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Erro ao aplicar desconto');
+            }
+        }
+        
+        async function pagarParcial(pedido_numero) {
+            const valorParcial = document.getElementById(`parcial-${pedido_numero}`).value.trim();
+            if (!valorParcial || isNaN(valorParcial)) {
+                alert('Digite um valor de pagamento parcial válido!');
+                return;
+            }
+            
+            const response = await fetch('/caixa/funcionario/pagar_parcial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pedido_numero, valor: parseFloat(valorParcial) })
+            });
+            
+            if (response.ok) {
+                alert('Pagamento parcial registrado!');
+                document.getElementById(`parcial-${pedido_numero}`).value = '';
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Erro ao registrar pagamento parcial');
+            }
+        }
+        
+        async function excluirPedido(pedido_numero) {
+            const senha = prompt('Digite a senha para excluir:');
+            if (senha === 'gabilelececi') {
+                const response = await fetch(`/delete_pedido/${pedido_numero}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Pedido excluído!');
+                    location.reload();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Erro ao excluir pedido');
+                }
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="header">CHURRASQUINHO DO LELE - RECEBIMENTO</div>
+    <div style="position: absolute; top: 10px; right: 10px;">
+        <a href="/index" title="Voltar para Home">
+            <button style="background-color: #8B0000; color: #FFFFFF; border: none; padding: 10px; border-radius: 5px; cursor: pointer; min-width: 48px; min-height: 48px; transition: transform 0.2s;">
+                <i class="fas fa-house" style="font-size: 20px;"></i>
+            </button>
+        </a>
+    </div>
+    <div class="content">
+        {% for id_cliente, grupo in grupos %}
+            {% if grupo.pedidos|selectattr('status', '!=', 'Pago')|list %}
+            <div class="comanda-card">
+                {% set nome_cliente = grupo.pedidos[0].nome %}
+                {% set pedido_antigo = grupo.pedidos|sort(attribute='data_hora')|first %}
+                {% set total_com_desconto = grupo.total - (grupo.desconto or 0) - (grupo.dividir1 or 0) - (grupo.dividir2 or 0) %}
+                <div class="comanda-header">
+                    <h3>{{ nome_cliente }} - Total: R$ {{ total_com_desconto | round(2) }}</h3>
+                    <small style="color: #8B0000;">- {{ pedido_antigo.data_hora[:10]|replace('-', '/') }} {{ pedido_antigo.data_hora[11:16] }}</small>
+                </div>
+                <div class="comanda-content">
+                    {% for pedido in grupo.pedidos %}
+                        {% if pedido.status != 'Pago' %}
+                        <div class="pedido-detalhes">
+                            <p><strong>Pedido #{{ pedido.pedido_numero }}</strong></p>
+                            <p>Horário: {{ pedido.data_hora[:10]|replace('-', '/') }} - {{ pedido.data_hora[11:16] }}</p>
+                            <p>Status: <span class="status {{ pedido.status | replace(' ', '') | lower }}">{{ pedido.status }}</span></p>
+                            <div class="produto-list">
+                                <p>Produtos:</p>
+                                <ul>
+                                    {% for produto in pedido.produto %}
+                                        <li>{{ produto }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <p>Valor: R$ {{ pedido.total | round(2) }}</p>
+                            {% if pedido.descricao or pedido.obs2 or pedido.obs3 or pedido.obs4 %}
+                                <p><strong>Observações:</strong></p>
+                                <ul>
+                                    {% if pedido.descricao %}<li>{{ pedido.descricao }}</li>{% endif %}
+                                    {% if pedido.obs2 %}<li>{{ pedido.obs2 }}</li>{% endif %}
+                                    {% if pedido.obs3 %}<li>{{ pedido.obs3 }}</li>{% endif %}
+                                    {% if pedido.obs4 %}<li>{{ pedido.obs4 }}</li>{% endif %}
+                                </ul>
+                            {% endif %}
+                            <div style="margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+                                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                                    <input type="number" id="desconto-{{ pedido.pedido_numero }}" placeholder="Desconto" style="padding: 5px; border-radius: 3px; border: 1px solid #ccc; width: 100px;">
+                                    <button class="pagar-btn" style="padding: 5px 10px;" onclick="aplicarDesconto({{ pedido.pedido_numero }})">Desconto</button>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="number" id="parcial-{{ pedido.pedido_numero }}" placeholder="Pago Parcial" style="padding: 5px; border-radius: 3px; border: 1px solid #ccc; width: 100px;">
+                                    <button class="pagar-btn" style="padding: 5px 10px;" onclick="pagarParcial({{ pedido.pedido_numero }})">Pago Parcial</button>
+                                </div>
+                                {% if pedido.desconto %}
+                                    <p style="margin-top: 5px; font-weight: bold; color: #8B0000;">
+                                        Desconto: R$ {{ pedido.desconto | round(2) }}
+                                    </p>
+                                {% endif %}
+                                {% if pedido.dividir1 %}
+                                    <p style="margin-top: 5px; font-weight: bold; color: #10B981;">
+                                        Primeiro pagamento: R$ {{ pedido.dividir1 | round(2) }}
+                                    </p>
+                                {% endif %}
+                                {% if pedido.dividir2 %}
+                                    <p style="margin-top: 5px; font-weight: bold; color: #10B981;">
+                                        Segundo pagamento: R$ {{ pedido.dividir2 | round(2) }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <button class="pagar-btn" style="background-color: #DC2626; margin-top: 10px;" onclick="excluirPedido({{ pedido.pedido_numero }})">Excluir Pedido</button>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div style="margin-top: 15px;">
+                        <button class="pagar-btn" onclick="pagarComanda('{{ id_cliente }}')">Pedido Pago Completo</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="footer">
+        <a href="https://www.instagram.com/churrasquinhodolele027" target="_blank">
+            @churrasquinhodolele027
+        </a><br>
+        ABERTO DE 17:30 AS 00:30<br>
+        SEGUNDA A SEXTA
+    </div>
+</body>
+</html>

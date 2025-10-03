@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churrasquinho do Lêle - Login</title>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background: url('static/wallpaperhorizontal.png') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #FFFFFF;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            font-family: 'Lucida Bright', serif;
+            font-weight: bold;
+            font-size: 2.2em;
+            color: #FFFFFF;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-info {
+            text-align: center;
+            color: #FFFFFF;
+            font-size: 1em;
+            margin-bottom: 15px;
+            background-color: #000000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .login-form {
+            max-width: 320px;
+            width: 100%;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: #000000;
+            animation: fadeIn 0.5s;
+        }
+        .login-form h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #8B0000;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #4B5563;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #8B0000;
+            color: #FFFFFF;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+            font-weight: bold;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        button:hover { transform: scale(1.05); background-color: #A52A2A; }
+        .erro { color: red; font-size: 14px; text-align: center; margin-top: 10px; }
+        .footer {
+            background-color: #000000;
+            text-align: center;
+            padding: 12px;
+            font-size: 0.9em;
+            margin-top: auto;
+        }
+        .footer a { color: #FFCD00; text-decoration: none; font-weight: bold; }
+        @media (max-width: 600px) { .login-form { width: 90%; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* modal básico */
+        .modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.6);
+        }
+        .modal form {
+            background:#fff; padding:20px; border-radius:8px; max-width:320px; width:90%;
+            color:#000;
+        }
+        .modal h3 { color:#8B0000; text-align:center; margin-bottom:10px; }
+        .modal small { display:block; margin-bottom:10px; color:#4B5563; }
+    </style>
+</head>
+<body>
+    <header>CHURRASQUINHO DO LÊLE</header>
+    <div class="content">
+        <p style="color: red; font-size: 0.9em; text-align: center; background-color: #000000; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Primeira vez aqui? Veja como usar, clique <button onclick="openTutorial()" style="background: none; border: none; color: #FFFFFF; text-decoration: underline; cursor: pointer; padding: 0;">aqui</button></p>
+        <div class="login-info">
+            <strong>Acesso automático. Memorize sua senha para retornos futuros.</strong>
+        </div>
+        <div class="login-form">
+            <h3>Login ou Cadastro</h3>
+            <form method="POST">
+                <input type="text" name="nome" placeholder="Seu Nome" required>
+                <input type="password" name="senha" placeholder="Senha (mín. 6 dígitos)" required>
+                <button type="submit">Entrar / Cadastrar</button>
+            </form>
+            {% if erro %}
+                <p class="erro">{{ erro }}</p>
+            {% endif %}
+            {% if request.args.get('msg') %}
+                <p style="color:green; font-size:14px; text-align:center; margin-top:10px;">
+                    {{ request.args.get('msg') }}
+                </p>
+            {% endif %}
+            <button onclick="window.location.href='/pedidos/lele'" style="margin-top: 12px;">
+                Acesso Lêle (Interno)
+            </button>
+            <!-- botão esqueci senha -->
+            <button type="button" onclick="document.getElementById('resetModal').style.display='flex'" 
+                    style="margin-top:12px; background:#4B5563;">Esqueci a senha</button>
+        </div>
+    </div>
+    <div class="footer">
+        <a href="https://www.instagram.com/churrasquinhodolele027" target="_blank">
+            @churrasquinhodolele027
+        </a><br>
+        ABERTO DE 17:30 AS 00:30<br>
+        SEGUNDA A SEXTA
+    </div>
+
+    <!-- modal de aniversario -->
+    {% if solicitar_aniversario %}
+    <div class="modal">
+        <form method="POST" action="/atualizar_aniversario">
+            <h3>Informe sua data de aniversário</h3>
+            <input type="date" name="aniversario" required>
+            <small>A sua data será utilizada para recuperação de senha, caso à esqueça.</small>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- modal de recupeara senha -->
+    <div id="resetModal" class="modal" 
+         style="{% if reset_senha %}display:flex;{% else %}display:none;{% endif %}">
+        <form method="POST" action="/esqueci_senha">
+            <h3>Recuperar Senha</h3>
+            <input type="text" name="nome" placeholder="Seu Nome" value="{{ nome or '' }}" required>
+            <input type="date" name="aniversario" value="{{ aniversario or '' }}" required>
+            {% if reset_senha %}
+                <input type="password" name="nova_senha" placeholder="Nova Senha (mín. 6 dígitos)" required>
+            {% endif %}
+            <button type="submit">Confirmar</button>
+        </form>
+    </div>
+
+    <!-- Modal Carrossel de Tutorial -->
+    <div id="tutorialModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); z-index: 1000; color: #000000; width: 80%; max-width: 500px;">
+        <h3>Tutorial do Sistema</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <button onclick="prevSlide()" style="background-color: #8B0000; color: #FFFFFF; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Anterior</button>
+            <span id="slideCounter" style="font-weight: bold;">1/7</span>
+            <button onclick="nextSlide()" style="background-color: #8B0000; color: #FFFFFF; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Próxima</button>
+        </div>
+        <img id="tutorialImage" src="/static/tutorial/etapa1.jpg" style="width: 100%; height: auto; border-radius: 10px;">
+        <button onclick="closeTutorial()" style="background-color: #EF4444; color: #FFFFFF; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Fechar (X)</button>
+    </div>
+
+    <!-- Fundo escuro do modal -->
+    <div id="modalBackground" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;"></div>
+</body>
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 7;
+
+        function openTutorial() {
+            document.getElementById('tutorialModal').style.display = 'block';
+            document.getElementById('modalBackground').style.display = 'block';
+            updateSlide();
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialModal').style.display = 'none';
+            document.getElementById('modalBackground').style.display = 'none';
+        }
+
+        function updateSlide() {
+            document.getElementById('tutorialImage').src = `/static/tutorial/etapa${currentSlide}.jpg`;
+            document.getElementById('slideCounter').textContent = `${currentSlide}/${totalSlides}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+    </script>
+</html>
