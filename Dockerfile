@@ -7,6 +7,7 @@ WORKDIR /app
 # Evita que Python crie arquivos .pyc
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 # Copia os requirements primeiro (cache build eficiente)
 COPY requirements.txt .
