@@ -1,26 +1,20 @@
 steps:
-  # Build da imagem
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/lele-repo/lele-app', '.']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/ajts-473820/lele-repo/lele-app', '.']
 
-  # Push para Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/lele-repo/lele-app']
+    args: ['push', 'us-central1-docker.pkg.dev/ajts-473820/lele-repo/lele-app']
 
-  # Deploy no Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - run
       - deploy
       - lele-service
-      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/lele-repo/lele-app
+      - --image=us-central1-docker.pkg.dev/ajts-473820/lele-repo/lele-app
       - --platform=managed
       - --region=us-central1
       - --allow-unauthenticated
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/lele-repo/lele-app'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  - 'us-central1-docker.pkg.dev/ajts-473820/lele-repo/lele-app'
