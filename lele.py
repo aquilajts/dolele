@@ -908,6 +908,9 @@ def usuarios_online():
     return jsonify(list(usuarios.values()))
 
     
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))  # usa PORT do Cloud Run, fallback 8080
-    app.run(debug=True, host='0.0.0.0', port=port)
+import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
