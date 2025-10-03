@@ -909,6 +909,5 @@ def usuarios_online():
 
     
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000)) # para google cloud
-    app.run(debug=True, host='0.0.0.0', port=port) #  original render
-
+    port = int(os.environ.get("PORT", 8080))  # usa PORT do Cloud Run, fallback 8080
+    app.run(debug=True, host='0.0.0.0', port=port)
